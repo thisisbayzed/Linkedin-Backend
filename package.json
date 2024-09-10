@@ -1,0 +1,40 @@
+{
+  "name": "linkedin-backend",
+  "version": "1.0.0",
+  "description": "A full-stack linkedin-backed with latest technology",
+  "main": "app.ts",
+  "scripts": {
+    "test": "express , mongodb , node , mongoose"
+  },
+  "keywords": [
+    "node",
+    "express",
+    "jwt",
+    "mongoose"
+  ],
+  "author": "Bayzed Bostami <bayzed.dev@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.3",
+    "cloudinary": "^2.4.0",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.20.0",
+    "mailtrap": "^3.4.0",
+    "mongoose": "^8.6.1",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/mongoose": "^5.11.97",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.5.4",
+    "nodemon": "^3.1.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.2"
+  }
+}
