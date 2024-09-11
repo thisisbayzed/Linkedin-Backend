@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import globalErrorHadler from "./middlewares/globalErrorHadler";
+import AuthenticationRouter from "./routes/authencations";
 const app = express();
 
 // Third party middleware
@@ -12,12 +13,7 @@ app.use(cookieParser());
 app.use(cors());
 
 // App routes
-
-app.get("/", (req, res, next) => {
-  res.send("hello world");
-});
-
-
+app.use("/api/auth/v1", AuthenticationRouter);
 
 // Global error handler
 app.use(globalErrorHadler);
