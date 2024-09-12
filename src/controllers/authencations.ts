@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import User from "../models/user.model";
 import jwt from "jsonwebtoken";
 import { config } from "../config/config";
+import { sendWellcomeEmail } from "../utils/emailHandlers";
 
 const registerUser = async (
   req: Request,
@@ -13,10 +14,11 @@ const registerUser = async (
     const { name, username, email, password } = req.body;
 
     // Validate user input
-    if (!(email | password | name | username)) {
-      return res.status(400).send("All input is required");
-    }
 
+    if (!name || !username || !email || !password) {
+      return res.status(400).send("All fields are required.");
+  }
+    
     // check if useremail already exist
     const userExistemail = await User.findOne({ email });
 
@@ -51,7 +53,7 @@ const registerUser = async (
     await user.save();
 
     // Create token
-    const token = jwt.sign({ user_id: user._id, email }, config.APP_STATUS, {
+    const token = jwt.sign({ user_id: user._id, email }, config.JWT_SECRET, {
       expiresIn: "2h",
     });
 
@@ -64,13 +66,67 @@ const registerUser = async (
     });
 
     res.status(201).send({ user, token });
+
+    // send wellcome email here....
+
+    const profileUrl = config.DEV_CLIENT + "/profile/" + user.username
+
+    try{
+
+      await sendWellcomeEmail({email:user.email , name:user.name , profileUrl:profileUrl})
+
+    }catch(error){
+      console.log(error)
+      next(error)
+    }
+
   } catch (err) {
     next(err);
   }
 };
 
-const loginUser = (req: Request, res: Response, next: NextFunction) => {
-  res.send("login");
+const loginUser = async (req: Request, res: Response, next: NextFunction) => {
+  try{
+
+    const { email, password } = req.body;
+
+		// Check if user exists
+		const user = await User.findOne({ email });
+		if (!user) {
+			return res.status(400).json({ message: "Invalid credentials" });
+		}
+
+		// Check password
+		const isMatch = await bcrypt.compare(password, user.password);
+		if (!isMatch) {
+			return res.status(400).json({ message: "Invalid credentials" });
+		}
+
+      // Create token
+      const token = jwt.sign({ user_id: user._id, email }, config.JWT_SECRET, {
+        expiresIn: "2h",
+      });
+  
+      // set token in cookie
+      res.cookie("secureToken", token, {
+        httpOnly: true,
+        maxAge: 2 * 60 * 60 * 1000,
+        sameSite: "strict",
+        secure: config.APP_STATUS === "development" ? false : true,
+      });
+
+      res.json({ message: "Logged in successfully" });
+
+  }catch(error){
+    next(error)
+  }
 };
 
-export { registerUser, loginUser };
+
+const logoutUser = (req: Request, res: Response, next: NextFunction) => {
+  res.clearCookie("secureToken")
+  res.json({ message: "Logged out successfully" });
+};
+
+
+export { registerUser, loginUser , logoutUser};
