@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import User from "../models/user.model";
+import { Education, Experience, UserProfile } from "../types/userProfile";
 
 // get current logged in user
 const currentUser = (req: Request, res: Response, next: NextFunction) => {
@@ -66,4 +67,54 @@ const singleUser = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { currentUser, suggestedUser, singleUser };
+const updateUser = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const allowedUpdates = [
+      "name",
+      "username",
+      "profilePic",
+      "coverPic",
+      "location",
+      "bio",
+      "about",
+      "skills",
+      "expreience",
+      "education",
+    ];
+
+    const updateData: Partial<UserProfile> = {};
+
+    // Loop through allowedUpdates to update valid fields
+    for (const field of allowedUpdates) {
+      if (req.body[field]) {
+        // Special handling for skills, experience, and education arrays
+        if (field === "skills" && Array.isArray(req.body[field])) {
+          updateData[field] = req.body[field] as string[]; // Explicit type assertion for skills array
+        } else if (field === "experience" && Array.isArray(req.body[field])) {
+          updateData[field] = req.body[field] as Experience[]; // Explicit type assertion for experience array
+        } else if (field === "education" && Array.isArray(req.body[field])) {
+          updateData[field] = req.body[field] as Education[]; // Explicit type assertion for education array
+        } else {
+          // For all other fields, assign them directly to updateData
+          updateData[field as keyof UserProfile] = req.body[field];
+        }
+      }
+    }
+
+    // todo check user profile & cover pic later
+
+    const user = await User.findByIdAndUpdate(req.user._id, updateData, {
+      new: true,
+    }).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export { currentUser, suggestedUser, singleUser, updateUser };
