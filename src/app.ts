@@ -14,8 +14,8 @@ app.use(cookieParser());
 app.use(cors());
 
 // App routes
-app.use("/api/auth/v1", AuthenticationRouter);
-app.use("/api/users/v1", UsersRouter);
+app.use("/api/v1/auth", AuthenticationRouter);
+app.use("/api/v1/users", UsersRouter);
 
 // Global error handler
 app.use(globalErrorHadler);

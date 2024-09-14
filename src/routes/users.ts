@@ -1,10 +1,10 @@
 import express from "express";
 import authHandler from "../middlewares/authHandler";
-import { currentUser } from "../controllers/user";
+import { currentUser, singleUser, suggestedUser } from "../controllers/user";
 const UsersRouter = express.Router();
 
+UsersRouter.get("/currentUser", authHandler, currentUser);
+UsersRouter.get("/suggestedUser", authHandler, suggestedUser);
+UsersRouter.get("/:username", authHandler, singleUser);
 
-UsersRouter.get("/currentUser" , authHandler , currentUser )
-
-
-export default UsersRouter
+export default UsersRouter;
