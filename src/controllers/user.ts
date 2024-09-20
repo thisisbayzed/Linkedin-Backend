@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import User from "../models/user.model";
 import { Education, Experience, UserProfile } from "../types/userProfile";
+import uploadToCloudinary from "../utils/uploadHandlers";
 
 // get current logged in user
 const currentUser = (req: Request, res: Response, next: NextFunction) => {
@@ -67,6 +68,7 @@ const singleUser = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+// update user
 const updateUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const allowedUpdates = [
@@ -101,7 +103,29 @@ const updateUser = async (req: Request, res: Response, next: NextFunction) => {
       }
     }
 
-    // todo check user profile & cover pic later
+    // new code here
+    const files = req.files as {
+      profileImage?: Express.Multer.File[];
+      coverImage?: Express.Multer.File[];
+    };
+
+    // Upload profile image if provided
+    if (files?.profileImage && files.profileImage[0]?.buffer) {
+      const result = await uploadToCloudinary(
+        files.profileImage[0].buffer,
+        "profile"
+      );
+      updateData.profilePic = result.secure_url; // Update the profilePic URL from Cloudinary
+    }
+
+    // Upload cover image if provided
+    if (files?.coverImage && files.coverImage[0]?.buffer) {
+      const result = await uploadToCloudinary(
+        files.coverImage[0].buffer,
+        "cover"
+      );
+      updateData.coverPic = result.secure_url; // Update the coverPic URL from Cloudinary
+    }
 
     const user = await User.findByIdAndUpdate(req.user._id, updateData, {
       new: true,

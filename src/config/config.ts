@@ -8,7 +8,10 @@ const _config = {
   MAILTRAP: process.env.MAILTRAP as string,
   EMAIL_FROM: process.env.EMAIL_FROM as string,
   EMAIL_FROM_NAME: process.env.EMAIL_FROM_NAME as string,
-  DEV_CLIENT: process.env.DEV_CLIENT as string
+  DEV_CLIENT: process.env.DEV_CLIENT as string,
+  Cloudinary_Cloud_Name: process.env.Cloudinary_Cloud_Name as string,
+  Cloudinary_API_Key: process.env.Cloudinary_API_Key as string,
+  Cloudinary_API_Secret: process.env.Cloudinary_API_Secret as string,
 };
 
 export const config = Object.freeze(_config);
