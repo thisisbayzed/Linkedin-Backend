@@ -53,17 +53,94 @@ const createComment = async (
   }
 };
 
-// get all comments
-const getAllComments = async (
+// get indivisual post comments
+const getIndivisualPostComments = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
     const { postId } = req.params;
+
+    const comments = await Comment.find({ post: postId });
+
+    if (!comments) {
+      return res.status(404).json({ message: "Comments not found" });
+    }
+
+    res.status(200).json({ comments });
   } catch (err) {
     next(err);
   }
 };
 
-export { createComment };
+// edite indivisual post comments
+const editIndivisualPostComments = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { commentId } = req.params;
+    const { content } = req.body;
+    const userId = req.user._id;
+
+    const comment = await Comment.findById(commentId);
+
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    if (comment.author.toString() !== userId.toString()) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const updatedComment = await Comment.findByIdAndUpdate(
+      commentId,
+      { content },
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: "Comment updated successfully",
+      comment: updatedComment,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// delete indivisual post comments
+const deleteIndivisualPostComments = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { commentId } = req.params;
+    const userId = req.user._id;
+
+    const comment = await Comment.findById(commentId);
+
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    if (comment.author.toString() !== userId.toString()) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    await Comment.findByIdAndDelete(commentId);
+
+    res.status(200).json({ message: "Comment deleted successfully" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export {
+  createComment,
+  getIndivisualPostComments,
+  editIndivisualPostComments,
+  deleteIndivisualPostComments,
+};
