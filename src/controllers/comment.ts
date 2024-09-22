@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import Comment from "../models/comment.model";
 import Post from "../models/post.model";
+import Notification from "../models/notification.model";
 
 // Create a new comment
 const createComment = async (
@@ -29,6 +30,19 @@ const createComment = async (
       { new: true }
     );
 
+    // Step 3: Fetch the post and its author (recipient of the notification)
+    const post = await Post.findById(postId).populate("author");
+
+    // step 4: create a notification if the comment owner is not the post owner
+    if (post?.author._id.toString() !== userId.toString()) {
+      await Notification.create({
+        type: "comment",
+        recipient: post?.author._id,
+        sender: userId,
+        post: postId,
+        comment: newComment._id,
+      });
+    }
     res.status(201).json({
       success: true,
       message: "Comment created and added to post successfully",
@@ -46,11 +60,7 @@ const getAllComments = async (
   next: NextFunction
 ) => {
   try {
-    
     const { postId } = req.params;
-
-    
-
   } catch (err) {
     next(err);
   }
