@@ -6,6 +6,7 @@ import globalErrorHadler from "./middlewares/globalErrorHadler";
 import AuthenticationRouter from "./routes/authencations";
 import UsersRouter from "./routes/users";
 import PostRouter from "./routes/post";
+import CommentRouter from "./routes/comments";
 const app = express();
 
 // Third party middleware
@@ -18,6 +19,7 @@ app.use(cors());
 app.use("/api/v1/auth", AuthenticationRouter);
 app.use("/api/v1/users", UsersRouter);
 app.use("/api/v1/posts", PostRouter);
+app.use("/api/v1/comments", CommentRouter);
 
 // Global error handler
 app.use(globalErrorHadler);
