@@ -8,6 +8,7 @@ import UsersRouter from "./routes/users";
 import PostRouter from "./routes/post";
 import CommentRouter from "./routes/comments";
 import NotificationRouter from "./routes/notification";
+import likesRouter from "./routes/likes";
 const app = express();
 
 // Third party middleware
@@ -22,6 +23,7 @@ app.use("/api/v1/users", UsersRouter);
 app.use("/api/v1/posts", PostRouter);
 app.use("/api/v1/comments", CommentRouter);
 app.use("/api/v1/notifications", NotificationRouter);
+app.use("/api/v1/likes", likesRouter);
 
 // Global error handler
 app.use(globalErrorHadler);
