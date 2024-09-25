@@ -60,16 +60,15 @@ const acceptRequest = async (
     const { connectionId } = req.params;
     const currentUser = req.user;
 
+    console.log(connectionId);
+
     if (!connectionId) {
       return res.status(400).json({ message: "connectionId is required" });
     }
 
-    const connection = await Connection.findById(connectionId).populate(
-      "sender",
-      "name email username profilePic",
-      "recipient",
-      "name email username profilePic"
-    );
+    const connection = await Connection.findById(connectionId)
+      .populate("sender", "name email username profilePic")
+      .populate("recipient", "name email username profilePic");
 
     if (!connection) {
       return res.status(404).json({ message: "Connection not found" });
