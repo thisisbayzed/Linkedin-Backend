@@ -13,7 +13,7 @@ const connectionSchema = new mongoose.Schema(
       required: [true, "Recipient is required"],
     },
     status: {
-      type: Boolean,
+      type: String,
       enum: ["pending", "accepted", "rejected"],
       default: "pending",
     },

@@ -1,50 +1,116 @@
 import { NextFunction, Request, Response } from "express";
 import Connection from "../models/connection.model";
+import User from "../models/user.model";
+import Notification from "../models/notification.model";
 
-const friendRequest = (
+const friendRequest = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    // const { friendRequestId } = req.params;
-    // const currentUser = req.user._id;
+    const { friendRequestId } = req.params;
+    const currentUser = req.user;
 
-    // if (!friendRequestId) {
-    //   return res.status(400).json({ message: "friendRequestId is required" });
-    // }
+    // console.log(friendRequestId, currentUser);
 
-    // if (friendRequestId.toString() === currentUser.toString()) {
-    //   return res
-    //     .status(400)
-    //     .json({ message: "you can't send friend request to yourself" });
-    // }
+    if (!friendRequestId) {
+      return res.status(400).json({ message: "friendRequestId is required" });
+    }
 
-    // if (currentUser.connections.includes(friendRequestId)) {
-    //   return res.status(400).json({ message: "You are already connected" });
-    // }
+    if (friendRequestId.toString() === currentUser._id.toString()) {
+      return res
+        .status(400)
+        .json({ message: "you can't send friend request to yourself" });
+    }
 
-    // const existingFriendRequest = await Connection.findOne({
-    //   sender: currentUser,
-    //   recipient: friendRequestId,
-    // });
+    if (currentUser.connections.includes(friendRequestId)) {
+      return res.status(400).json({ message: "You are already connected" });
+    }
 
-    // if (existingFriendRequest) {
-    //   return res.status(400).json({ message: "Friend request already sent" });
-    // }
+    const existingFriendRequest = await Connection.findOne({
+      sender: currentUser._id,
+      recipient: friendRequestId,
+    });
 
-    // const newFriendRequest = new Connection({
-    //   sender: currentUser,
-    //   recipient: friendRequestId,
-    // });
+    if (existingFriendRequest) {
+      await Connection.findByIdAndDelete(existingFriendRequest._id);
+      return res.status(400).json({ message: "Friend request already sent" });
+    }
 
-    // await newFriendRequest.save();
+    const newFriendRequest = new Connection({
+      sender: currentUser._id,
+      recipient: friendRequestId,
+    });
 
-    // res.status(201).json({ message: "Friend request sent successfully" });
-    res.send("friend request sent successfully");
+    await newFriendRequest.save();
+
+    res.status(201).json({ message: "Friend request sent successfully" });
   } catch (err) {
     next(err);
   }
 };
 
-export { friendRequest };
+const acceptRequest = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { connectionId } = req.params;
+    const currentUser = req.user;
+
+    if (!connectionId) {
+      return res.status(400).json({ message: "connectionId is required" });
+    }
+
+    const connection = await Connection.findById(connectionId).populate(
+      "sender",
+      "name email username profilePic",
+      "recipient",
+      "name email username profilePic"
+    );
+
+    if (!connection) {
+      return res.status(404).json({ message: "Connection not found" });
+    }
+
+    // we are not acceted others friend request
+    if (connection.recipient._id.toString() !== currentUser._id.toString()) {
+      return res
+        .status(401)
+        .json({ message: "Not authorized to accept this request" });
+    }
+
+    if (connection.status !== "pending") {
+      return res.status(400).json({ message: "Connection already accepted" });
+    }
+
+    connection.status = "accepted";
+    await connection.save();
+
+    // if im your friend then ur also my friend ;)
+
+    await User.findByIdAndUpdate(currentUser._id, {
+      $addToSet: { connections: connection.sender._id },
+    });
+    await User.findByIdAndUpdate(connection.sender._id, {
+      $addToSet: { connections: currentUser._id },
+    });
+
+    // create notification
+    const notification = new Notification({
+      sender: currentUser._id,
+      recipient: connection.sender._id,
+      type: "connectionAccepted",
+    });
+
+    await notification.save();
+
+    res.status(200).json({ message: "Connection accepted successfully" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export { friendRequest, acceptRequest };

@@ -25,9 +25,7 @@ app.use("/api/v1/posts", PostRouter);
 app.use("/api/v1/comments", CommentRouter);
 app.use("/api/v1/notifications", NotificationRouter);
 app.use("/api/v1/likes", likesRouter);
-app.use("api/v1/connections", (req, res) => {
-    res.status(404).json({ message: "Not found" });
-});
+app.use("/api/v1/connections", ConnectionRouter);
 
 // Global error handler
 app.use(globalErrorHadler);
