@@ -1,9 +1,12 @@
 import express from "express";
 import authHandler from "../middlewares/authHandler";
-import { acceptRequest, friendRequest } from "../controllers/connections";
+import { acceptRequest, friendRequest, getFriendlist, getFriendRequests, rejectRequest } from "../controllers/connections";
 const ConnectionRouter = express.Router();
 
 ConnectionRouter.post("/request/:friendRequestId", authHandler, friendRequest);
-ConnectionRouter.post("/accepted/:connectionId", authHandler, acceptRequest);
+ConnectionRouter.put("/accepted/:connectionId", authHandler, acceptRequest);
+ConnectionRouter.put("/rejected/:connectionId", authHandler, rejectRequest);
+ConnectionRouter.get("/friendRequests", authHandler , getFriendRequests);
+ConnectionRouter.get("/friendlist", authHandler , getFriendlist);
 
 export default ConnectionRouter;
