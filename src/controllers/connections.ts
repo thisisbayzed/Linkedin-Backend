@@ -221,10 +221,29 @@ const removeFriend = async (
       return res.status(400).json({ message: "friendId is required" });
     }
 
+    await User.findByIdAndUpdate(currentUser._id, {
+      $pull: { connections: friendId },
+    });
+
+    await User.findByIdAndUpdate(friendId, {
+      $pull: { connections: currentUser._id },
+    });
+
+    // remove friend from connection
+    await Connection.findOneAndDelete({
+      $or: [
+        { sender: currentUser._id, recipient: friendId },
+        { sender: friendId, recipient: currentUser._id },
+      ],
+    });
+
+    res.status(200).json({ message: "Friend removed successfully" });
   } catch (err) {
     next(err);
   }
-}
+};
+
+
 
 export {
   friendRequest,
@@ -232,4 +251,5 @@ export {
   rejectRequest,
   getFriendRequests,
   getFriendlist,
+  removeFriend,
 };
