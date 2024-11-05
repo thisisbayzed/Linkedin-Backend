@@ -27,6 +27,10 @@ app.use("/api/v1/notifications", NotificationRouter);
 app.use("/api/v1/likes", likesRouter);
 app.use("/api/v1/connections", ConnectionRouter);
 
+app.get("/user", (req, res) => {
+  res.status(200).json("Hello World");
+});
+
 // Global error handler
 app.use(globalErrorHadler);
 
